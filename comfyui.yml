@@ -25,4 +25,7 @@ services:
     environment:
       - CLI_ARGS=--listen
     network_mode: gf_network
-networks: {}
+
+networks:
+  gf_network:
+    external: true
