@@ -1,0 +1,73 @@
+services:
+  postgres_n8n:
+    image: postgres:16
+    container_name: postgres_n8n
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=n8n
+      - POSTGRES_NON_ROOT_USER=n8n
+      - POSTGRES_NON_ROOT_PASSWORD=n8n
+    volumes:
+      - /data_folder/postgres_n8n:/var/lib/postgresql/data
+      - ./init-data.sh:/docker-entrypoint-initdb.d/init-data.sh
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -h localhost -U admin -d n8n
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    network_mode: gf_network
+    restart: unless-stopped
+  redis_n8n_ollama:
+    container_name: redis_n8n_ollama
+    image: redis:latest
+    environment:
+      - TZ=Europe/Berlin
+      - TCP_PORT_6379=6379
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_EXTRA_FLAGS=--auto-aof-rewrite-percentage 100
+        --auto-aof-rewrite-min-size 1mb
+      - PUID=99
+      - PGID=100
+    volumes:
+      - /data_folder/redis_n8n_ollama/data:/data:rw
+    network_mode: docker
+    restart: unless-stopped
+  n8n_main:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: n8n_main
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.n8n.entryPoints=https
+      - traefik.http.routers.n8n.rule=Host(`n8n.your_custom_domain.com`)
+      - traefik.http.services.n8n.loadbalancer.server.port=5678
+    environment:
+      - PUID=99
+      - PGID=100
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres_n8n
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=n8n
+      - DB_POSTGRESDB_USER=admin
+      - DB_POSTGRESDB_PASSWORD=admin
+      - NODE_ENV=production
+      - N8N_SECURE_COOKIE=false
+      - N8N_ENCRYPTION_KEY=change_my_value
+      - NODE_OPTIONS="--max-old-space-size=4096"
+      - N8N_HOST=n8n.your_custom_domain.com
+      - N8N_PROTOCOL=https
+      - WEBHOOK_URL=https://n8n.your_custom_domain.com
+    ports:
+      - 5678:5678
+    command: start
+    volumes:
+      - /data_folder/n8n:/home/node/.n8n
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - postgres_n8n
+      - redis_n8n_ollama
+    network_mode: gf_network
+    restart: unless-stopped
+networks: {}
