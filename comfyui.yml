@@ -1,0 +1,28 @@
+services:
+  comfyui:
+    restart: unless-stopped
+    container_name: comfyui
+    ports:
+      - 7860:7860
+    volumes:
+      - /mnt/user/ai/comfyui/data/models:/data/models
+      - /mnt/user/ai/comfyui/data/embeddings:/data/embeddings
+      - /mnt/user/appdata/comfyui/data:/data
+      - /mnt/user/ai/comfyui/output:/output
+    tty: true
+    stop_signal: SIGKILL
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids:
+                - "0"
+              capabilities:
+                - compute
+                - utility
+    image: tbd
+    environment:
+      - CLI_ARGS=--listen
+    network_mode: gf_network
+networks: {}
