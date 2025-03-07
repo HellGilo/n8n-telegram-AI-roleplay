@@ -5,10 +5,8 @@ services:
     ports:
       - 7860:7860
     volumes:
-      - /mnt/user/ai/comfyui/data/models:/data/models
-      - /mnt/user/ai/comfyui/data/embeddings:/data/embeddings
-      - /mnt/user/appdata/comfyui/data:/data
-      - /mnt/user/ai/comfyui/output:/output
+      - /data_folder/comfyui/data:/data
+      - /data_folder/comfyui/output:/output
     tty: true
     stop_signal: SIGKILL
     deploy:
