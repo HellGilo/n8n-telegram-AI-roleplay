@@ -70,4 +70,7 @@ services:
       - redis_n8n_ollama
     network_mode: gf_network
     restart: unless-stopped
-networks: {}
+
+networks:
+  gf_network:
+    external: true
