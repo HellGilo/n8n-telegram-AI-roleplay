@@ -1,25 +1,48 @@
 services:
-  postgres_n8n:
-    image: postgres:16
-    container_name: postgres_n8n
-    environment:
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=admin
-      - POSTGRES_DB=n8n
-      - POSTGRES_NON_ROOT_USER=n8n
-      - POSTGRES_NON_ROOT_PASSWORD=n8n
-    volumes:
-      - /data_folder/postgres_n8n:/var/lib/postgresql/data
-      - ./init-data.sh:/docker-entrypoint-initdb.d/init-data.sh
-    healthcheck:
-      test:
-        - CMD-SHELL
-        - pg_isready -h localhost -U admin -d n8n
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    network_mode: gf_network
+  comfyui:
     restart: unless-stopped
+    container_name: comfyui
+    ports:
+      - 7860:7860
+    volumes:
+      - /data_folder/comfyui/data:/data
+      - /data_folder/comfyui/output:/output
+    tty: true
+    stop_signal: SIGKILL
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids:
+                - "0"
+              capabilities:
+                - compute
+                - utility
+    image: tbd
+    environment:
+      - CLI_ARGS=--listen
+    network_mode: gf_network
+  ollama:
+    restart: unless-stopped
+    volumes:
+      - /data_folder/ollama:/root/.ollama
+    ports:
+      - 11434:11434
+    container_name: ollama
+    image: ollama/ollama:latest
+    hostname: ollama
+    network_mode: gf_network
+    devices:
+      - /dev/dri:/dev/dri
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities:
+                - gpu
   redis_n8n_ollama:
     container_name: redis_n8n_ollama
     image: redis:latest
@@ -46,14 +69,7 @@ services:
     environment:
       - PUID=99
       - PGID=100
-      - DB_TYPE=postgresdb
-      - DB_POSTGRESDB_HOST=postgres_n8n
-      - DB_POSTGRESDB_PORT=5432
-      - DB_POSTGRESDB_DATABASE=n8n
-      - DB_POSTGRESDB_USER=admin
-      - DB_POSTGRESDB_PASSWORD=admin
       - NODE_ENV=production
-      - N8N_SECURE_COOKIE=false
       - N8N_ENCRYPTION_KEY=change_my_value
       - NODE_OPTIONS="--max-old-space-size=4096"
       - N8N_HOST=n8n.your_custom_domain.com
