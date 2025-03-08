@@ -5,8 +5,8 @@ services:
     ports:
       - 7860:7860
     volumes:
-      - /data_folder/comfyui/data:/data
-      - /data_folder/comfyui/output:/output
+      - ./data_folder/comfyui/data:/data
+      - ./data_folder/comfyui/output:/output
     tty: true
     stop_signal: SIGKILL
     deploy:
@@ -23,10 +23,11 @@ services:
     environment:
       - CLI_ARGS=--listen
     network_mode: gf_network
+  
   ollama:
     restart: unless-stopped
     volumes:
-      - /data_folder/ollama:/root/.ollama
+      - ./data_folder/ollama:/root/.ollama
     ports:
       - 11434:11434
     container_name: ollama
@@ -43,6 +44,7 @@ services:
               count: all
               capabilities:
                 - gpu
+  
   redis_n8n_ollama:
     container_name: redis_n8n_ollama
     image: redis:latest
@@ -55,9 +57,10 @@ services:
       - PUID=99
       - PGID=100
     volumes:
-      - /data_folder/redis_n8n_ollama/data:/data:rw
+      - ./data_folder/redis_n8n_ollama/data:/data:rw
     network_mode: docker
     restart: unless-stopped
+  
   n8n_main:
     image: docker.n8n.io/n8nio/n8n
     container_name: n8n_main
@@ -79,14 +82,30 @@ services:
       - 5678:5678
     command: start
     volumes:
-      - /data_folder/n8n:/home/node/.n8n
+      - ./data_folder/n8n:/home/node/.n8n
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - postgres_n8n
       - redis_n8n_ollama
     network_mode: gf_network
     restart: unless-stopped
-
+  
+  kokoro-fastapi-gpu:
+    container_name: kokoro-fastapi-gpu
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities:
+                - gpu
+    ports:
+      - 8880:8880
+    image: ghcr.io/remsky/kokoro-fastapi-gpu:v0.2.2
+    network_mode: docker
+    restart: unless-stopped
+    
 networks:
   gf_network:
     external: true
