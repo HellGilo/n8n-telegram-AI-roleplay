@@ -22,8 +22,7 @@ services:
     image: tbd
     environment:
       - CLI_ARGS=--listen
-    network_mode: gf_network
-  
+      
   ollama:
     restart: unless-stopped
     volumes:
@@ -33,7 +32,6 @@ services:
     container_name: ollama
     image: ollama/ollama:latest
     hostname: ollama
-    network_mode: gf_network
     devices:
       - /dev/dri:/dev/dri
     deploy:
@@ -58,7 +56,6 @@ services:
       - PGID=100
     volumes:
       - ./data_folder/redis_n8n_ollama/data:/data:rw
-    network_mode: docker
     restart: unless-stopped
   
   n8n_main:
@@ -87,7 +84,6 @@ services:
     depends_on:
       - postgres_n8n
       - redis_n8n_ollama
-    network_mode: gf_network
     restart: unless-stopped
   
   kokoro-fastapi-gpu:
@@ -103,9 +99,4 @@ services:
     ports:
       - 8880:8880
     image: ghcr.io/remsky/kokoro-fastapi-gpu:v0.2.2
-    network_mode: docker
     restart: unless-stopped
-    
-networks:
-  gf_network:
-    external: true
