@@ -53,8 +53,6 @@ services:
       - ALLOW_EMPTY_PASSWORD=yes
       - REDIS_EXTRA_FLAGS=--auto-aof-rewrite-percentage 100
         --auto-aof-rewrite-min-size 1mb
-      - PUID=99
-      - PGID=100
     volumes:
       - ./data_folder/redis_n8n_ollama/data:/data:rw
     restart: unless-stopped
@@ -68,11 +66,7 @@ services:
       - traefik.http.routers.n8n.rule=Host(`n8n.your_custom_domain.com`)
       - traefik.http.services.n8n.loadbalancer.server.port=5678
     environment:
-      - PUID=99
-      - PGID=100
       - NODE_ENV=production
-      - N8N_ENCRYPTION_KEY=change_my_value
-      - NODE_OPTIONS="--max-old-space-size=4096"
       - N8N_HOST=n8n.your_custom_domain.com
       - N8N_PROTOCOL=https
       - WEBHOOK_URL=https://n8n.your_custom_domain.com
@@ -81,7 +75,6 @@ services:
     command: start
     volumes:
       - ./data_folder/n8n:/home/node/.n8n
-      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - redis_n8n_ollama
     restart: unless-stopped
