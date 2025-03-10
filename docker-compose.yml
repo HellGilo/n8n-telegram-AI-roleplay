@@ -82,7 +82,6 @@ services:
       - ./data_folder/n8n:/home/node/.n8n
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
-      - postgres_n8n
       - redis_n8n_ollama
     restart: unless-stopped
   
