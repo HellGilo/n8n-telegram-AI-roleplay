@@ -5,6 +5,7 @@ services:
     ports:
       - 7860:7860
     volumes:
+      - ./data_folder/comfyui/data/models:/data/models
       - ./data_folder/comfyui/data:/data
       - ./data_folder/comfyui/output:/output
     tty: true
