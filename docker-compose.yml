@@ -9,6 +9,7 @@ services:
       - ./data_folder/comfyui/output:/output
     tty: true
     stop_signal: SIGKILL
+    build: ./stable-diffusion-webui-docker/services/comfy
     deploy:
       resources:
         reservations:
@@ -19,7 +20,7 @@ services:
               capabilities:
                 - compute
                 - utility
-    image: tbd
+    image: sd-comfy:7
     environment:
       - CLI_ARGS=--listen
       
